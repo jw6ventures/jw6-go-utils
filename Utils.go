@@ -2,6 +2,7 @@ package jw6_utils
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -77,4 +78,29 @@ func (u *Utils) Log(class string, method string, level LogLevel, message string)
 			}
 		}
 	}
+}
+
+func (u *Utils) PrintBanner(product string, version string, copyrightYear string, hashes int) {
+	versionString := "Version " + version
+	copyrightString := "Copyright " + copyrightYear + "by  James Williams"
+	interior := max(len(product), len(versionString), len(copyrightString)) + 6
+
+	headerHashString := strings.Repeat("#", hashes+interior+hashes)
+	hashString := strings.Repeat("#", hashes)
+
+	fmt.Println(headerHashString)
+	fmt.Println(hashString + u.centerInString(product, interior) + hashString)
+	fmt.Println(hashString + u.centerInString("Version "+version, interior) + hashString)
+	fmt.Println(hashString + u.centerInString("Copyright "+copyrightYear+" James Williams", interior) + hashString)
+	fmt.Println(headerHashString)
+	fmt.Println("")
+	fmt.Println("")
+}
+
+func (u Utils) centerInString(word string, spaces int) string {
+	spacesNeeded := spaces - len(word)
+	spacesNeededBefore := spacesNeeded / 2
+	spacesNeededAfter := spacesNeeded - spacesNeededBefore
+
+	return strings.Repeat(" ", spacesNeededBefore) + word + strings.Repeat(" ", spacesNeededAfter)
 }
