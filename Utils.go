@@ -6,9 +6,16 @@ import (
 	"time"
 )
 
+// ANSI color codes
+const (
+	colorReset  = "\033[0m"
+	colorRed    = "\033[31m"
+	colorGreen  = "\033[32m"
+	colorYellow = "\033[33m"
+)
+
 type Utils struct {
 	LogLevel LogLevel
-	// Define fields...
 }
 
 type LogLevel int
@@ -50,39 +57,46 @@ func (l LogLevel) String() string {
 }
 
 func (u *Utils) Log(class string, method string, level LogLevel, message string) {
-	if level >= u.LogLevel {
-		currentTime := time.Now()
-		formattedTime := currentTime.Format("2006-01-02 15:04:05")
-		if level <= Info {
-			fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", message, "\n")
-		} else {
-			// Color ANSI escape code
-			red := "\033[31m"
-			yellow := "\033[33m"
-			green := "\033[32m"
-			// Reset ANSI escape code (to reset color)
-			reset := "\033[0m"
+	if level < u.LogLevel {
+		return
+	}
 
-			if level == Info {
-				fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", green, message, reset, "\n")
-			} else if level == Warn {
-				fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", yellow, message, reset, "\n")
-			} else if level <= Error {
-				fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", red, message, reset, "###############\n")
-			} else if level <= Fatal {
-				fmt.Println("******************************************************************************************************************")
-				fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", red, message, reset, "\n")
-				fmt.Println("******************************************************************************************************************")
-			} else {
-				fmt.Print(formattedTime, " [", class, "][", method, "][", level.String(), "] - ", message, "\n")
-			}
-		}
+	formattedTime := time.Now().Format("2006-01-02 15:04:05")
+
+	// Determine color based on log level
+	var color string
+	switch level {
+	case Info:
+		color = colorGreen
+	case Warn:
+		color = colorYellow
+	case Error, Fatal:
+		color = colorRed
+	default:
+		color = "" // No color for Trace and Debug
+	}
+
+	// Build the log tags
+	logTags := fmt.Sprintf("%s [%s][%s][%s] - ", formattedTime, class, method, level.String())
+
+	if level == Fatal {
+		fmt.Println("******************************************************************************************************************")
+	}
+
+	if color != "" {
+		fmt.Printf("%s%s%s%s\n", logTags, color, message, colorReset)
+	} else {
+		fmt.Printf("%s%s\n", logTags, message)
+	}
+
+	if level == Fatal {
+		fmt.Println("******************************************************************************************************************")
 	}
 }
 
-func (u *Utils) PrintBanner(product string, version string, copyrightYear string, hashes int) {
+func (u *Utils) PrintBanner(product string, version string, copyrightYear string, hashes int, copyrightOwner string) {
 	versionString := "Version " + version
-	copyrightString := "Copyright " + copyrightYear + "by  James Williams"
+	copyrightString := "Copyright " + copyrightYear + " " + copyrightOwner
 	interior := max(len(product), len(versionString), len(copyrightString)) + 6
 
 	headerHashString := strings.Repeat("#", hashes+interior+hashes)
@@ -90,8 +104,8 @@ func (u *Utils) PrintBanner(product string, version string, copyrightYear string
 
 	fmt.Println(headerHashString)
 	fmt.Println(hashString + u.centerInString(product, interior) + hashString)
-	fmt.Println(hashString + u.centerInString("Version "+version, interior) + hashString)
-	fmt.Println(hashString + u.centerInString("Copyright "+copyrightYear+" James Williams", interior) + hashString)
+	fmt.Println(hashString + u.centerInString(versionString, interior) + hashString)
+	fmt.Println(hashString + u.centerInString(copyrightString, interior) + hashString)
 	fmt.Println(headerHashString)
 	fmt.Println("")
 	fmt.Println("")
