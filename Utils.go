@@ -12,6 +12,7 @@ const (
 	colorRed    = "\033[31m"
 	colorGreen  = "\033[32m"
 	colorYellow = "\033[33m"
+	colorBlue   = "\033[34m"
 )
 
 type Utils struct {
@@ -42,8 +43,8 @@ func LogLevelFromString(level string) LogLevel {
 	case "Fatal":
 		return Fatal
 	default:
-		fmt.Println("Default log level applied")
-		return Info // or any default level you want to set
+		fmt.Println("Default log level (Info) applied")
+		return Info
 	}
 }
 
@@ -66,6 +67,8 @@ func (u *Utils) Log(class string, method string, level LogLevel, message string)
 	// Determine color based on log level
 	var color string
 	switch level {
+	case Debug:
+		color = colorBlue
 	case Info:
 		color = colorGreen
 	case Warn:
@@ -73,7 +76,7 @@ func (u *Utils) Log(class string, method string, level LogLevel, message string)
 	case Error, Fatal:
 		color = colorRed
 	default:
-		color = "" // No color for Trace and Debug
+		color = "" // No color for Trace
 	}
 
 	// Build the log tags
