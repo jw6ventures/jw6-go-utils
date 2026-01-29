@@ -26,7 +26,7 @@ func main() {
 		MigrationsPath:   "migrations",
 		AppVersion:       "1.2.3",
 		SchemaPath:       "db.sql",
-		SchemaCheckTable: "institution_links",
+		SchemaCheckTable: "users",
 		Logger:           utils,
 	})
 
