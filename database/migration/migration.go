@@ -216,7 +216,7 @@ func (m *Manager) findMigrations(fromVersion, toVersion *semver.Version) ([]Migr
 			continue
 		}
 
-		if version.GreaterThan(fromVersion) && version.Compare(toVersion) <= 0 {
+		if version.GreaterThan(fromVersion) && migrationWithinTarget(version, toVersion) {
 			migrations = append(migrations, MigrationFile{
 				Version: version,
 				Path:    filepath.Join(m.MigrationsPath, file.Name()),
@@ -229,6 +229,22 @@ func (m *Manager) findMigrations(fromVersion, toVersion *semver.Version) ([]Migr
 	})
 
 	return migrations, nil
+}
+
+func migrationWithinTarget(version, target *semver.Version) bool {
+	if version.Compare(target) <= 0 {
+		return true
+	}
+
+	// Allow a final release migration such as 1.0.12 to run for prerelease
+	// app targets on the same core version such as 1.0.12-rc1.
+	if target.Prerelease() == "" || version.Prerelease() != "" {
+		return false
+	}
+
+	return version.Major() == target.Major() &&
+		version.Minor() == target.Minor() &&
+		version.Patch() == target.Patch()
 }
 
 func (m *Manager) log(method string, level jw6_utils.LogLevel, message string) {

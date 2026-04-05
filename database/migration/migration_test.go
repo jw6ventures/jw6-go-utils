@@ -53,6 +53,44 @@ func TestFindMigrationsOrdersAndFilters(t *testing.T) {
 	}
 }
 
+func TestFindMigrationsIncludesFinalForMatchingPrereleaseTarget(t *testing.T) {
+	dir := t.TempDir()
+
+	files := []string{
+		"v1.0.12.sql",
+		"v1.0.13.sql",
+		"v1.0.12-rc2.sql",
+	}
+	for _, name := range files {
+		path := filepath.Join(dir, name)
+		if err := os.WriteFile(path, []byte("-- noop"), 0644); err != nil {
+			t.Fatalf("write %s: %v", name, err)
+		}
+	}
+
+	manager := &Manager{MigrationsPath: dir}
+	fromVersion, err := semver.NewVersion("1.0.11")
+	if err != nil {
+		t.Fatalf("fromVersion: %v", err)
+	}
+	toVersion, err := semver.NewVersion("1.0.12-rc1")
+	if err != nil {
+		t.Fatalf("toVersion: %v", err)
+	}
+
+	migrations, err := manager.findMigrations(fromVersion, toVersion)
+	if err != nil {
+		t.Fatalf("findMigrations: %v", err)
+	}
+
+	if len(migrations) != 1 {
+		t.Fatalf("expected 1 migration, got %d", len(migrations))
+	}
+	if migrations[0].Version.String() != "1.0.12" {
+		t.Fatalf("expected migration 1.0.12, got %s", migrations[0].Version.String())
+	}
+}
+
 func TestHasExplicitTransactionStatements(t *testing.T) {
 	tests := []struct {
 		name     string
