@@ -32,6 +32,8 @@ const (
 
 func LogLevelFromString(level string) LogLevel {
 	switch level {
+	case "Trace":
+		return Trace
 	case "Debug":
 		return Debug
 	case "Info":
